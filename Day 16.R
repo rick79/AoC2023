@@ -337,17 +337,3 @@ max(unlist(res_x), unlist(res_y))
 
 # Answer: 7741
 
-
-plot.new()
-plot.window(xlim = c(1, 10), ylim = c(1, 10))
-
-#lines(c(1, 10, 10, 1), c(0, 0, 10, 10), type = "l", lwd = 5, col = "grey")
-for(y in 1:nrow(layout)) {
-  for(x in 1:ncol(layout)) {
-    if(layout[y, x] == "/") {
-      lines(c(0, 0), c(x-1, x+1))
-    }
-    #points(x, y, pch = layout[y, x], bg="black", cex=3)
-  }
-}
-
