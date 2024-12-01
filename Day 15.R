@@ -55,7 +55,7 @@ data <- paste(readLines("day15.txt"), collapse="")
 # 
 # So, to find the result of running the HASH algorithm on the string HASH:
 #   
-#   The current value starts at 0.
+# The current value starts at 0.
 # The first character is H; its ASCII code is 72.
 # The current value increases to 72.
 # The current value is multiplied by 17 to become 1224.
@@ -108,10 +108,14 @@ data <- paste(readLines("day15.txt"), collapse="")
 # careful when copy-pasting it.)
 
 # Part One ----------------------------------------------------------------
+#
+# An easy hash function?
+#
+#
+
 initialization_seq <- data |> 
   str_remove_all("\n") |> 
   str_split_1(",")
-
 
 # HASH algorithm
 # Determine the ASCII code for the current character of the string.
@@ -127,8 +131,7 @@ holiday_ash <- function(string) {
   return(current_value)
 }
 
-res <- lapply(initialization_seq, holiday_ash)
-sum(unlist(res))
+initialization_seq |> lapply(holiday_ash) |> unlist() |> sum()
 
 # Answer: 517315
 
@@ -146,7 +149,7 @@ sum(unlist(res))
 # ----------------------------------------->
 #       |  0  |  |  1  |   ...   | 255 |
 #       +-----+  +-----+         +-----+
-
+#
 # Inside each box, there are several lens slots that will keep a lens correctly 
 # positioned to focus light passing through the box. The side of each box has a 
 # panel that opens to allow you to insert or remove lenses as necessary.
@@ -258,12 +261,18 @@ sum(unlist(res))
 #   
 
 # Part Two ----------------------------------------------------------------
+#
+# Part Two is at least more challenging than Part One. Tried solving it using
+# either a dict of dicts (the dict being form the collection library) and a list
+# of dicts. Using the list of dicts was somewhat faster.
+#
+
 instructions <- initialization_seq |> 
-  lapply(\(x) { return(list( "box" = holiday_ash(str_extract(x, ".*(?=[\\=|\\-])")),
-                             "label" = str_extract(x, ".*(?=[\\=|\\-])"),
-                             "op" = str_extract(x, "[\\=|\\-]"),
-                             "focal_length" = coalesce(as.numeric(str_extract(x, "(?<=[\\=|\\-]).*")), 0)
-  ))})
+  lapply(\(x) { list("box" = str_extract(x, ".*(?=[\\=|\\-])") |> holiday_ash(),
+                     "label" = str_extract(x, ".*(?=[\\=|\\-])"),
+                     "op" = str_extract(x, "[\\=|\\-]"),
+                     "focal_length" = coalesce(str_extract(x, "(?<=[\\=|\\-]).*") |> as.numeric()), 0)
+  })
 
 # With dictionary of dictionaries 
 system.time({
@@ -291,13 +300,16 @@ print(fp)
 #   user    system  elapsed 
 #   0.129   0.010   0.155 
 
+
+
+
 # With dictionary of lists
 system.time({
 boxes <- dict()
 for(ins in instructions) {
   print(paste0("Box: ", ins$box, ", operation: ", ins$op, ", label: ", ins$label, ", focal length: ", ins$focal_length))
   lenses <- boxes$get(ins$box, list())
-  if(ins$op == "=") lenses[ins$label] <- ins$focal_length else lenses[ins$label] <- NULL # lenses <- lenses[- which(names(lenses) == ins$label)]
+  if(ins$op == "=") lenses[ins$label] <- ins$focal_length else lenses[ins$label] <- NULL
   boxes$set(ins$box, lenses)
 }
 fp <- 0

@@ -884,10 +884,8 @@ parts <- input |>
   ))
 
 process_parts <- function(part, wf = "in") {
-  workflow <- first(workflows[map(workflows, \(x) { x$name == wf}) |> unlist()])
-  rules <- workflow$rules
-  fallback <- workflow$fallback
-  for(rule in rules) {
+  workflow <- workflows[map(workflows, \(x) { x$name == wf}) |> unlist()] |> first()
+  for(rule in workflow$rules) {
     cond <- ifelse(rule$conditional == ">", part[rule$property] > rule$target, part[rule$property] < rule$target)
     if(cond) {
       if(rule$action == "A") return(TRUE)
@@ -902,7 +900,7 @@ process_parts <- function(part, wf = "in") {
 
 sum <- 0
 for(part in parts) {
-  if(process_parts(part)  ) {
+  if(process_parts(part)) {
     sum <- sum + sum(unlist(part))
   }
 }
@@ -945,9 +943,9 @@ sum
 #
 find_combinations <- function(ranges, node = "in") {
   if(node == "R") return(0) # The part is rejected, and will not count towards the total number of combinations
-  if(node == "A") return(prod(unlist(lapply(ranges, \(x) x[2] - x[1] + 1)))) # The part is accdepted and will yield combinations of xmas.
+  if(node == "A") return(lapply(ranges, \(x) x[2] - x[1] + 1) |> unlist() |> prod()) # The part is accdepted and will yield combinations of xmas.
 
-  workflow <- first(workflows[map(workflows, \(x) { x$name == node}) |> unlist()])
+  workflow <- workflows[map(workflows, \(x) { x$name == node}) |> unlist()] |> first()
   combinations <- 0
   exhausted <- FALSE
   

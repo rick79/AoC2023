@@ -839,37 +839,35 @@ KCR = (THX, VBG)"
 #   
 
 # Part One ----------------------------------------------------------------
-
 input <- data
 instructions <- input |> str_extract("^[R|L]*(?=\\n\\n)")
-network <- lapply(input |> str_extract("(?<=\\n\\n)[A-Z|\\s|\\()|\\)|,|\\=]*") |> str_split("\\n") |> unlist(), function(n) {
-  return(c(
+network <- input |> 
+  str_extract("(?<=\\n\\n)[A-Z|\\s|\\()|\\)|,|\\=]*") |> 
+  str_split("\\n") |> 
+  unlist() |> 
+  lapply(\(n) c(
     "id" =str_extract(n, "^[A-Z]*(?=\\s)"),
     "L" = str_extract(n, "(?<=\\()[A-Z]*(?=,)"),
     "R" = str_extract(n, "(?<=,\\s)[A-Z]*(?=\\))")
-  ))
-})  |> unlist() |> matrix(ncol = 3, byrow = TRUE)
-
+  ))  |> 
+  unlist() |> 
+  matrix(ncol = 3, byrow = TRUE)
 
 traverse <- function(start, end, instructions, network) {
   position <-  1
   steps <- 0
-  while(TRUE) {
+  repeat {
     steps <- steps + 1
     here <- network[str_detect(network[,1], start)]
     n <-  substr(instructions, position, position)
-    next_step <- here [if_else(n == "L", 2, 3)]
+    next_step <- here[if_else(n == "L", 2, 3)]
     print(paste0("Going ", n, " from ", start, " to ", next_step))
     position <- if_else(position == str_length(instructions), 1, position + 1)
-    if(prod(str_detect(next_step, end))) {
-      break
-    } else {
-      start <- next_step
-    }
+    if(prod(str_detect(next_step, end))) break else start <- next_step
   }
-
   return(steps)
 }
+
 traverse("AAA", "ZZZ", instructions, network)
 
 # Answer: 13019
@@ -934,22 +932,22 @@ traverse("AAA", "ZZZ", instructions, network)
 # to have been constructed in this way.
 #
 # For example:
-
-p1 <- traverse("MXA", "(A-Z|0-9)*Z$", instructions, network)   # MXA->XHZ
-p2 <- traverse("XHZ", "(A-Z|0-9)*Z$", instructions, network)   # XHZ->MXA
-
+# 
+# p1 <- traverse("MXA", "(A-Z|0-9)*Z$", instructions, network)   # MXA->XHZ
+# p2 <- traverse("XHZ", "(A-Z|0-9)*Z$", instructions, network)   # XHZ->MXA
+# 
 # This means that each path will loop back to the ending node every s steps.
 #
 # That makes it easier to solve the problem, for this specific data set.
 # If you visualise each path as X, Y and Z as below, they will reach the end 
 # nodes when all multiples of the path lengths are the same.
-
+# 
 # X X X|X X X|X X X|X X X
 # Y Y Y Y|Y Y Y Y|Y Y Y Y
 # Z Z|Z Z|Z Z|Z Z|Z Z|Z Z
 #
 # So we should look for the least common multiple for the number of steps.
-
+# 
 # All to slow implementation!
 # LCMv <- function(X) {
 #   X0 <- X
@@ -960,21 +958,11 @@ p2 <- traverse("XHZ", "(A-Z|0-9)*Z$", instructions, network)   # XHZ->MXA
 #   return(X[1])
 # }
 
-
-input2 <- data
 starting_nodes <- network[str_ends(network[,1], "A"),]
-paths_from_starting_nodes <- lapply(starting_nodes[,1], traverse, "(A-Z|0-9)*Z$", instructions2, network2)
-r <- reduce(paths_from_starting_nodes, Lcm)
-print(r, digits=16)
+starting_nodes[,1] |> 
+  lapply(traverse, "(A-Z|0-9)*Z$", instructions, network) |> 
+  reduce(Lcm) |> 
+  print(digits=16)
 
 # Answer: 13524038372771
 
-
-
-
-
-
-
-LCMv(c(3, 4, 6))
-  
-match(3, c(3, 4, 6))

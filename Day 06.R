@@ -61,8 +61,8 @@ Distance:   207   1394   1209   1014"
 document <- data
 
 get_wins <- function(time_ms, distance_mm) {
-  r <- unlist(lapply(0:time_ms, race_time, t=time_ms))
-  return(length(r[r > distance_mm]))
+  r <- 0:time_ms |> lapply(race_time, t=time_ms) |> unlist()
+  return(r[r > distance_mm] |> length())
 }
 
 race_time <- function(t_pressed, t) {
@@ -74,9 +74,9 @@ tibble(
     "distance_mm" = document |> str_extract("(?<=Distance:\\s)(\\d+|\\s)*$") |> str_extract_all("\\d+") |> unlist()
   )|> 
   mutate(
-    time_ms = as.numeric(time_ms),
-    distance_mm = as.numeric(distance_mm),
-    wins = unlist(mapply(get_wins, time_ms = time_ms, distance_mm = distance_mm))
+    time_ms = time_ms |> as.numeric(),
+    distance_mm =distance_mm |> as.numeric(),
+    wins = mapply(get_wins, time_ms = time_ms, distance_mm = distance_mm) |> unlist()
   ) |> 
   summarise(
     margin = prod(wins)
@@ -125,10 +125,7 @@ document <- data
 race_distance <- function(distance, t) {
   discriminant <- t^2 - 4*distance
   if(discriminant >= 0) {
-    return(sort( c(
-      (t + sqrt(discriminant)) / 2,
-      (t - sqrt(discriminant)) / 2
-    )))
+    return(c( (t + sqrt(discriminant)) / 2, (t - sqrt(discriminant)) / 2) |> sort())
   }
   return(NULL)
 }
@@ -146,12 +143,12 @@ tibble(
     "distance_mm" = document |> str_extract("(?<=Distance:\\s)(\\d+|\\s)*$") |> str_remove_all("\\D*") |> unlist()
   ) |> 
   mutate(
-    time_ms = as.numeric(time_ms),
-    distance_mm = as.numeric(distance_mm),
-    wins = unlist(mapply(get_wins_quadratic, time_ms = time_ms, distance_mm = distance_mm))
+    time_ms = time_ms |> as.numeric(),
+    distance_mm = distance_mm |> as.numeric(),
+    wins = mapply(get_wins_quadratic, time_ms = time_ms, distance_mm = distance_mm) |> unlist()
   ) |> 
   summarise(
-    margin = max(wins)
+    margin = wins |> max()
   )
 
 # Answer: 38220708

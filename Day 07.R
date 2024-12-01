@@ -1132,8 +1132,6 @@ A92AJ 179
 # One pair          A23A4   2, 1, 1, 1     2
 # High card         23456   1, 1, 1, 1, 1  1
 
-input <- data
-
 # List of the strengths of different card counts, used for comparisons. Note 
 # that the ordering is important for the identical() function!
 strength <- list(
@@ -1148,25 +1146,27 @@ strength <- list(
 
 # Determine the ordering of cards if they have the same strength
 card_order <- function(hand) {
-  cards <- str_split_1(hand, "")
+  cards <- hand |> str_split_1("")
   o <- 0
-  for(i in 1:length(cards)) {
+  for(card in cards) {
     o <- o * 100
     inc <- case_when(
-      cards[i] == "A" ~ 14,
-      cards[i] == "K" ~ 13,
-      cards[i] == "Q" ~ 12,
-      cards[i] == "J" ~ 11,
-      cards[i] == "T" ~ 10,
-      .default = strtoi(cards[i])
+      card == "A" ~ 14,
+      card == "K" ~ 13,
+      card == "Q" ~ 12,
+      card == "J" ~ 11,
+      card == "T" ~ 10,
+      .default = card |> strtoi()
     )
     o <- o + inc
   }
   return(o)
 }
 
+
+
 get_hand_strength <- function(cards) {
-  cs <- sort(as.integer(str_split(cards, "") |> table())) # Sort the card counts so that the identical() function can compare the counts to the strength list
+  cs <- cards |> str_split("") |> table() |> as.integer() |> sort() # Sort the card counts so that the identical() function can compare the counts to the strength list
   s <- case_when(
     identical(cs, strength[[2]]) ~ 2, # One pair
     identical(cs, strength[[3]]) ~ 3, # Two pairs
@@ -1179,7 +1179,7 @@ get_hand_strength <- function(cards) {
   return(s)
 }
 
-tibble("hands" = unlist(str_split(input, "\\n"))) |> 
+tibble("hands" = input |> str_split("\\n") |> unlist()) |> 
   separate_wider_regex(
     hands,
     patterns = c(
@@ -1188,9 +1188,9 @@ tibble("hands" = unlist(str_split(input, "\\n"))) |>
       bid = "\\d+"
     )
   ) |> mutate (
-    bid = as.numeric(bid),
-    strength = unlist(lapply(cards, get_hand_strength)),
-    order = unlist(lapply(cards, card_order))
+    bid = bid |> as.numeric(),
+    strength = cards |> lapply(get_hand_strength) |> unlist(),
+    order = cards |> lapply(card_order) |> unlist()
   ) |> 
   arrange(strength, order ) |>
   mutate(
@@ -1198,7 +1198,7 @@ tibble("hands" = unlist(str_split(input, "\\n"))) |>
     winning = rank*bid
   ) |> 
   summarise(
-    total_winnings = sum(winning)
+    total_winnings = winning |> sum()
   )
 
 # Answer: 250232501
@@ -1240,22 +1240,21 @@ tibble("hands" = unlist(str_split(input, "\\n"))) |>
 
 
 # Part Two ----------------------------------------------------------------
-input2 <- data
 
 # Determine the ordering of cards if they have the same strength, now with wild
 # cards
 card_order_wildcard <- function(hand) {
-  cards <- str_split_1(hand, "")
+  cards <- hand |> str_split_1("")
   o <- 0
-  for(i in 1:length(cards)) {
+  for(card in cards) {
     o <- o * 100
     inc <- case_when(
-      cards[i] == "A" ~ 14,
-      cards[i] == "K" ~ 13,
-      cards[i] == "Q" ~ 12,
-      cards[i] == "J" ~ 1,    # Wild card!
-      cards[i] == "T" ~ 10,
-      .default = strtoi(cards[i])
+      card == "A" ~ 14,
+      card == "K" ~ 13,
+      card == "Q" ~ 12,
+      card == "J" ~ 1,    # Wild card!
+      card == "T" ~ 10,
+      .default = card |> strtoi()
     )
     o <- o + inc
   }
@@ -1263,8 +1262,8 @@ card_order_wildcard <- function(hand) {
 }
 
 get_hand_strength_wildcard <- function(hand) {
-  f <- str_split(hand, "") |> table()
-  cs <- sort(as.integer(f))  # Sort the card counts so that the identical() function can compare the counts to the strength list
+  f <- hand |> str_split("") |> table()
+  cs <- f |> as.integer() |> sort()  # Sort the card counts so that the identical() function can compare the counts to the strength list
   wc <- f["J"]               # Number of wild cards
   
   s <- case_when(
@@ -1291,7 +1290,7 @@ get_hand_strength_wildcard <- function(hand) {
   return(s)
 }
 
-tibble("hands" = unlist(str_split(input2, "\\n"))) |> 
+tibble("hands" = data |> str_split("\\n") |> unlist()) |> 
   separate_wider_regex(
     hands,
     patterns = c(
@@ -1300,9 +1299,9 @@ tibble("hands" = unlist(str_split(input2, "\\n"))) |>
       bid = "\\d+"
     )
   ) |> mutate (
-    bid = as.numeric(bid),
-    strength = unlist(lapply(cards, get_hand_strength_wildcard)),
-    order = unlist(lapply(cards, card_order_wildcard))
+    bid = bid |> as.numeric(),
+    strength = cards |> lapply(get_hand_strength_wildcard) |> unlist(),
+    order = cards |> lapply(card_order_wildcard) |> unlist()
   ) |> 
   arrange(
     strength,
@@ -1313,7 +1312,7 @@ tibble("hands" = unlist(str_split(input2, "\\n"))) |>
     winning = rank*bid
   ) |> 
   summarise(
-    total_winnings = sum(winning)
+    total_winnings = winning |> sum()
   )
 
 # Answer: 249138943

@@ -325,9 +325,7 @@ open_to <- list(
 find_start <- function(pipes) {
   for(y in 1:nrow(pipes)) {
     for(x in 1:ncol(pipes)) {
-      if(pipes[y, x] == "S") {
-        return(list("y"=y, "x"=x))
-      }
+      if(pipes[y, x] == "S") return(list("y"=y, "x"=x))
     }
   }
   return(NA)
@@ -349,7 +347,7 @@ is_traversable <- function(pipes, starty, startx, endy, endx) {
 traverse_pipes_and_get_steps <- function(pipes, x, y) {
   history <- list()
   steps <- 0
-  while(TRUE) {
+  repeat {
     history <- append(history, paste0(y, "_", x))
     if(is_traversable(pipes, y, x, y-1, x) & !(paste0(y-1, "_", x) %in% history)) {
       print(paste0("Going north to ", pipes[y-1, x], " with y = ", y-1, ", x = ", x))
@@ -596,7 +594,7 @@ ceiling(max(loop, na.rm = TRUE)/2)
 traverse_pipes_and_get_path <- function(pipes, y, x) {
   path <- matrix(" ", nrow = nrow(pipes), ncol = ncol(pipes))
   history <- list()
-  while(TRUE) {
+  repeat {
     history <- append(history, paste0(y, "_", x))
     path[y, x] <-  pipes[y, x]
     if(is_traversable(pipes, y, x, y-1, x) & !(paste0(y-1, "_", x) %in% history)) {
@@ -634,7 +632,7 @@ counter <- 0
 for(y in 1:nrow(loop)) {
   for(x in 1:(ncol(loop)-1)) {
     if(loop[y, x] == " ") {
-      if((sum(loop[y, 1:x]  %in% list("S", "J", "L", "|"))  %% 2 == 1) & (sum(loop[y, x:ncol(loop)]  %in% list("S", "J", "L", "|"))  %% 2 == 1) ) {
+      if((loop[y, 1:x]  %in% list("S", "J", "L", "|") |> sum() %% 2 == 1) & (loop[y, x:ncol(loop)]  %in% list("S", "J", "L", "|") |> sum()  %% 2 == 1) ) {
         counter <- counter + 1
       }
     }   
@@ -790,3 +788,4 @@ loop <- contract_loop_matrix(loop)
 sum(loop == " ")
 
 # Answer: 435
+

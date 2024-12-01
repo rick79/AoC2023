@@ -1,4 +1,4 @@
-# Day 9: Mirage Maintenanc
+# Day 9: Mirage Maintenance
 
 # Init --------------------------------------------------------------------
 
@@ -327,18 +327,15 @@ data <- "9 10 20 47 106 220 423 776 1406 2579 4829 9202 17771 34815 69626 143262
 # integers and failed for the real data when checking if a row only contained 
 # zeroes by summing the elements. Adding a small abs() solved that...
 #
-input <- data
-sequences <- input |> str_split_1("\n") |> str_split(" ") |> lapply(function(x) {return(as.numeric(x))})
+sequences <- data |> str_split_1("\n") |> str_split(" ") |> lapply(\(x) x |> as.numeric())
 
 # With recursion
 find_next_recursive <- function(s) {
   d <- diff(s)
-  if(all(d == 0)) {
-    return(last(s))
-  } 
+  if(all(d == 0)) return(last(s))
   return(find_next_recursive(d)+last(s))
 }
-sum(unlist(lapply(sequences, find_next_recursive)))
+sequences |> lapply(find_next_recursive) |> unlist() |> sum()
 # Answer: 1581679977
 
 
@@ -357,7 +354,7 @@ find_next_better <- function(s) {
   return(prev)
 }
 
-sum(unlist(lapply(sequences, find_next_better)))
+sequences |> lapply(find_next_better) |> unlist() |> sum()
 # Answer: 1581679977
 
 
@@ -377,14 +374,11 @@ find_next <- function(s) {
 
   for(i in (length(r)-1):1) {
     r_app[[i]][length(r_app[[i]])] <- r_app[[i]][length(r_app[[i]])-1] + r_app[[i+1]][length(r_app[[i+1]])]
-    
   }
   return(r_app[[1]][length(r_app[[1]])])
 }
 
-sum(unlist(lapply(sequences, find_next)))
-
-
+sequences |> lapply(find_next) |> unlist() |> sum()
 
 # Answer: 1581679977
           
@@ -423,8 +417,7 @@ sum(unlist(lapply(sequences, find_next)))
 # 
 # Just reverse the sequences... 
 #
-input <- data
-sequences <- input |> str_split_1("\n") |> str_split(" ") |> lapply(function(x) {return(rev(as.numeric(x)))})
-sum(unlist(lapply(rev_seq, find_next_recursive)))
+rev_seq <- data |> str_split_1("\n") |> str_split(" ") |> lapply(\(x) x |> as.numeric() |> rev())
+rev_seq |> lapply(find_next_recursive) |> unlist() |> sum()
 
 # Answer: 889

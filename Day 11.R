@@ -3,7 +3,6 @@
 # Init --------------------------------------------------------------------
 library(tidyverse)
 
-
 # Data --------------------------------------------------------------------
 
 test1 <- "...#......
@@ -295,38 +294,6 @@ data <- "........................#..............................................
 # most efficient way though. 
 #
 
-# expand_universe <- function(universe) {
-#   c <- c()
-#   r <- c()
-#   for(x in 1:ncol(universe)) {
-#     if(all(universe[, x] == ".")) c <- append(c, x)
-#   }
-#   for(y in 1:nrow(universe)) {
-#     if(all(universe[y,] == ".")) r <- append(r, y)
-#   }
-#   if(length(c) > 0) {
-#     for(x in 1:length(c)) {
-#       universe <- cbind(universe[,1:(c[x] + x -1)], 
-#                         matrix(".", ncol = 1, nrow = nrow(universe)), 
-#                         universe[, (c[x] + x):ncol(universe)])
-#     }
-#   }
-#   if(length(r) > 0) {
-#     for(y in 1:length(r)) {
-#       universe <- rbind(universe[1:(r[y] + y - 1),], 
-#                         matrix(".", ncol = ncol(universe), nrow = 1), 
-#                         universe[(r[y] + y):nrow(universe),])
-#     }
-#   }
-#   return(universe)
-# }
-
-# manhattan_distance <- function(starty, startx, endy, endx) {
-#   return(abs(endy - starty) + abs(endx - startx))
-# }
-#
-# universe <- expand_universe(universe)
-
 enumerate_galaxies <- function(universe, galaxy = "#") {
   new_universe <- matrix(0, nrow = nrow(universe), ncol = ncol(universe))
   n <- 1
@@ -346,12 +313,10 @@ manhattan_distance_expanding <- function(universe, starty, startx, endy, endx, e
   return( abs(endy - starty) + abs(endx - startx) - dx + dx * expansion )
 }
 
-
 universe <- data |> 
   str_split_1("\n") |> 
   str_split("") |> 
-  {\(x) unlist(x) |> 
-      matrix(ncol = length(x), byrow = TRUE)}() |> 
+  {\(x) unlist(x) |> matrix(ncol = length(x), byrow = TRUE)}() |> 
   enumerate_galaxies()
 
 combinations <- combn(1:max(universe), 2)
@@ -374,8 +339,7 @@ s
 universe <- data |> 
   str_split_1("\n") |> 
   str_split("") |> 
-  {\(x) unlist(x) |> 
-      matrix(ncol = length(x), byrow = TRUE)}()
+  {\(x) unlist(x) |> matrix(ncol = length(x), byrow = TRUE)}()
 
 empty_rows <- which(rowSums(universe == "#") == 0)
 empty_cols <- which(colSums(universe == "#") == 0)
@@ -384,7 +348,7 @@ galaxies <- which(universe == "#", arr.ind = TRUE)
 manhattan_distance_expanding_v2 <- function(pos, combinations, galaxies, empty_cols, empty_rows, expansion = 2) {
   g1 <- galaxies[combinations[1, pos],]
   g2 <- galaxies[combinations[2, pos],]
-  ef <- sum(between(empty_rows, min(g1[[1]], g2[[1]]),  max(g1[[1]], g2[[1]]))) + sum(between(empty_cols, min(g1[2], g2[2]), max(g1[2], g2[2])))
+  ef <- between(empty_rows, min(g1[[1]], g2[[1]]),  max(g1[[1]], g2[[1]])) |> sum() + between(empty_cols, min(g1[2], g2[2]), max(g1[2], g2[2])) |> sum()
   return( abs(g1[[1]] - g2[[1]]) + abs(g1[[2]] - g2[[2]]) - ef + ef * expansion )
 }
 
@@ -431,8 +395,7 @@ lapply(1:ncol(combinations), manhattan_distance_expanding_v2, combinations = com
 universe2 <- data |> 
   str_split_1("\n") |> 
   str_split("") |> 
-  {\(x) unlist(x) |> 
-      matrix(ncol = length(x), byrow = TRUE)}() |> 
+  {\(x) unlist(x) |> matrix(ncol = length(x), byrow = TRUE)}() |> 
   enumerate_galaxies()
 combinations2 <- combn(1:max(universe2), 2)
 
@@ -453,8 +416,7 @@ s
 universe2 <- data |> 
   str_split_1("\n") |> 
   str_split("") |> 
-  {\(x) unlist(x) |> 
-      matrix(ncol = length(x), byrow = TRUE)}()
+  {\(x) unlist(x) |> matrix(ncol = length(x), byrow = TRUE)}()
 
 empty_rows <- which(rowSums(universe2 == "#") == 0)
 empty_cols <- which(colSums(universe2 == "#") == 0)
@@ -466,3 +428,40 @@ lapply(1:ncol(combinations2), manhattan_distance_expanding_v2, combinations = co
   sum()
 
 # Answer: 678626199476
+
+
+
+
+
+# Old stuff
+# expand_universe <- function(universe) {
+#   c <- c()
+#   r <- c()
+#   for(x in 1:ncol(universe)) {
+#     if(all(universe[, x] == ".")) c <- append(c, x)
+#   }
+#   for(y in 1:nrow(universe)) {
+#     if(all(universe[y,] == ".")) r <- append(r, y)
+#   }
+#   if(length(c) > 0) {
+#     for(x in 1:length(c)) {
+#       universe <- cbind(universe[,1:(c[x] + x -1)], 
+#                         matrix(".", ncol = 1, nrow = nrow(universe)), 
+#                         universe[, (c[x] + x):ncol(universe)])
+#     }
+#   }
+#   if(length(r) > 0) {
+#     for(y in 1:length(r)) {
+#       universe <- rbind(universe[1:(r[y] + y - 1),], 
+#                         matrix(".", ncol = ncol(universe), nrow = 1), 
+#                         universe[(r[y] + y):nrow(universe),])
+#     }
+#   }
+#   return(universe)
+# }
+
+# manhattan_distance <- function(starty, startx, endy, endx) {
+#   return(abs(endy - starty) + abs(endx - startx))
+# }
+#
+# universe <- expand_universe(universe)

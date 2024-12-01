@@ -1102,7 +1102,7 @@ tibble("calibration" = str_split_1(data, "\n"))  |>
 
 tibble("calibration" = str_split_1(data, "\n"))  |> 
   mutate(
-    number = unlist(lapply(str_extract_all(calibration, "\\d"), function(extracted) { return(if_else(length(extracted) > 0, as.numeric(paste0(first(extracted),last(extracted))), 0))}))
+    number = lapply(str_extract_all(calibration, "\\d"), function(extracted) { return(if_else(length(extracted) > 0, as.numeric(paste0(first(extracted),last(extracted))), 0))}) |> unlist()
   ) |> 
   summarise(
     sum = sum(number, na.rm = TRUE)

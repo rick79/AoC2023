@@ -396,7 +396,7 @@ answer
 # Part Two ----------------------------------------------------------------
 #
 # This was the easiest part two that followed the hardest part one! Just had to
-# change the consecutive steps conditional and only atempt to turn if the 
+# change the consecutive steps conditional and only attempt to turn if the 
 # consecutive steps is equal to or greater than 4 or is equal to 0.
 #
 
@@ -411,9 +411,7 @@ while(frontier$size() > 0) {
     answer <- v$heat_loss
     break
   }
-  if(expanded$has(list(position = v$position, delta = v$delta, consecutive = v$consecutive))) {
-    next
-  }
+  if(expanded$has(list(position = v$position, delta = v$delta, consecutive = v$consecutive))) next
   # print(paste0("Position = [", v$position[1], ", ", v$position[2], "], delta = [", v$delta[1], ", ", v$delta[2], "], heat_loss = ", v$heat_loss, ", consecutive = ", v$consecutive))
   expanded$set(list(position = v$position, delta = v$delta, consecutive = v$consecutive), 1)
   

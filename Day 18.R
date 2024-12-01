@@ -698,12 +698,21 @@ U 13 (#543c33)"
 #
 
 # Part One ----------------------------------------------------------------
-input <- data
-dig_plan <- input |> 
+#
+# Tried to solve the problem by counting the number of dug squares starting from
+# left going right in each direction. Didn't work out so I started looking for 
+# other ways of calculating the area of a polygon and found a nifty and nice
+# little algorithm called the shoelace algorithm that works by constructing 
+# matrices with the coordinates combining the points so that P1 is combined with
+# P2, P2 with P3, etc, until Pn is combined with P1. Then take the sum of the 
+# determinants of each matrix. This is apparently the area for the polygon. 
+# Works like magic.
+#
+
+dig_plan <- data |> 
   str_split_1("\n") |> 
-  {\(x) list( substr(x, 1, 1), strtoi(str_extract(x, "(?<=\\w\\s)\\d+")), strtoi(str_extract(x, "(?<=\\(#).*(?=\\))"), 16L)) }() |> 
-  {\(x) unlist(x) |>
-      matrix(ncol = length(x), byrow = FALSE)}()
+  {\(x) list( substr(x, 1, 1), x |> str_extract("(?<=\\w\\s)\\d+") |> strtoi(), x |> str_extract("(?<=\\(#).*(?=\\))") |> strtoi(16L)) }() |> 
+  {\(x) unlist(x) |> matrix(ncol = length(x), byrow = FALSE)}()
 
 vertices <- list(list(1, 1))
 current_x <- 1
@@ -720,12 +729,12 @@ for(i in 1:nrow(dig_plan)) {
   }
   vertices <- append(vertices, list(c(current_x, current_y))  )
 }
-m <- matrix(unlist(vertices), nrow = 2, byrow = FALSE)
-area <- det(m[, c(x+1, 1)])
+m <- vertices |> unlist() |> matrix(nrow = 2, byrow = FALSE)
+area <- det(m[, c(ncol(m), 1)])
 for(x in 1:(ncol(m)-1)) {
   area <- area + det(m[, x:(x+1)])
 }
-print(abs(area) / 2 + sum(strtoi(dig_plan[,2])) / 2 + 1)
+print(abs(area) / 2 + (dig_plan[,2] |> strtoi() |> sum() / 2) + 1)
 
 # Answer: 47045
 
@@ -770,11 +779,15 @@ print(abs(area) / 2 + sum(strtoi(dig_plan[,2])) / 2 + 1)
 #
 
 # Part Two ----------------------------------------------------------------
+#
+# Not much that has to be changed for part two. 
+#
 dig_plan <- data |> 
   str_split_1("\n") |> 
-  {\(x) list(strtoi(str_extract(x, "\\d(?=\\))")), strtoi(str_extract(x, "(?<=\\(#).*(?=\\d\\))"), 16L)) }() |> 
-  {\(x) unlist(x) |>
-      matrix(ncol = length(x), byrow = FALSE)}()
+  {\(x) list(x |> str_extract("\\d(?=\\))") |> strtoi(), x |> str_extract("(?<=\\(#).*(?=\\d\\))") |> strtoi(16L)) }() |> 
+  {\(x) unlist(x) |> matrix(ncol = length(x), byrow = FALSE)}()
+
+
 vertices <- list(list(1, 1))
 current_x <- 1
 current_y <- 1
@@ -790,10 +803,11 @@ for(i in 1:nrow(dig_plan)) {
   }
   vertices <- append(vertices, list(c(current_x, current_y))  )
 }
-m <- matrix(unlist(vertices), nrow = 2, byrow = FALSE)
+m <- vertices |> unlist() |> matrix(nrow = 2, byrow = FALSE)
 area <- det(m[, c(x+1, 1)])
 for(x in 1:(ncol(m)-1)) {
   area <- area + det(m[, x:(x+1)])
 }
-print(abs(area) / 2 + sum(dig_plan[,2]) / 2 + 1, digits = 16)
+print(abs(area) / 2 + dig_plan[,2] |> sum() / 2 + 1, digits = 16)
+
 # Answer: 147839570293376

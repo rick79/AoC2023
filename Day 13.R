@@ -1,8 +1,7 @@
 # Day 13: Point of Incidence
 # Init --------------------------------------------------------------------
 library(tidyverse)
-#library(cachem)
-
+source("utilities.R")
 # Data --------------------------------------------------------------------
 
 test1 <- "#.##..##.
@@ -1535,8 +1534,7 @@ patterns <- data |>
     p |> 
       str_split_1("\\n") |> 
       str_split("") |>
-      {\(x) unlist(x) |> 
-          matrix(nrow = length(x), byrow = TRUE)}() 
+      {\(x) unlist(x) |> matrix(nrow = length(x), byrow = TRUE)}() 
     })
 
 # Transmorphing sounds so much cooler than hashing.
@@ -1566,14 +1564,7 @@ transmorph <- function(m, dim = 1) {
   return(v)
 }
 
-# Only compare until things are different, no need to continue checking then...
-lazy_compare_hash <- function(a, b) {
-  l <- min(length(a), length(b))
-  for(i in l:1) {
-    if(a[i] != b[i]) return(FALSE)
-  }
-  return(TRUE)
-}
+
 
 # The exclude parameter was added in Part Two to remove instances of previous
 # lines of reflection.
@@ -1593,13 +1584,12 @@ find_mirrors_hash <- function(m, dim = 1, exclude = -1) {
   return(r)
 }
 
-result <- lapply(patterns, \(x) {
+lapply(patterns, \(x) {
   h <- find_mirrors_hash(x, 1)
   v <- find_mirrors_hash(x, 2)
   return(v + 100*h)
-})
-result
-sum(unlist(result))
+}) |> unlist() |> sum()
+
 
 # Answer: 35360
 
@@ -1709,8 +1699,7 @@ unsmudge <- function(m) {
 
 fixes <- lapply(patterns, \(x) unsmudge(x))
 
-
-res <- lapply(fixes, \(x) {
+lapply(fixes, \(x) {
   h0 <- find_mirrors_hash(x[[1]], 1)
   v0 <- find_mirrors_hash(x[[1]], 2)
   result <- 0
@@ -1723,7 +1712,6 @@ res <- lapply(fixes, \(x) {
     }
   }
   result
-})
-sum(unlist(res))
+}) |> unlist() |> sum()
 
 # Answer: 36755

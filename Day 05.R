@@ -345,10 +345,8 @@ humidity-to-location map:
 
 # Part One ----------------------------------------------------------------
 
-almanac <-  test1
-
+almanac <-  data
 seeds <- tibble("seeds" = as.numeric(flatten(str_split(str_extract(almanac, "(?<=seeds:\\s)(\\d+|\\s)*(?=\\n\\n)"), "\\s+"))))
-seeds
 
 parse_map <- function(data, map, divider = "\\n\\n") {
   pattern = paste0("(?<=", map, ":\\s)(\\d+|\\s)*(?=", divider, ")")

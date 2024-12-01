@@ -226,8 +226,7 @@ data <- r"(\.....................\.......................|..../......-..........
 layout <- data |> 
   str_split_1("\n") |> 
   str_split("") |> 
-  {\(x) unlist(x) |> 
-      matrix(ncol = length(x), byrow = TRUE)}()
+  {\(x) unlist(x) |> matrix(ncol = length(x), byrow = TRUE)}()
 
 check_encounter <- function(e, d) {
   if(e == "/") return(list( rev(d)*(-1) ))
@@ -262,13 +261,12 @@ traverse <- function(l, p, d, contraption, history, que) {
 
 find_energized <- function(layout, position, direction) {
   history <- dict()
-  #que <- queue()
   que <- deque()
   contraption <- matrix(".", nrow = nrow(layout), ncol = ncol(layout))
   que$push(list(position, direction))
   while(que$size() > 0) {
     l <- que$pop()
-    contraption <- traverse(layout, l[[1]], l[[2]], contraption, history, que)
+    contraption <- layout |> traverse(l[[1]], l[[2]], contraption, history, que)
   }
   return(sum(contraption == "#"))
 }
@@ -324,6 +322,13 @@ find_energized(layout, c(1, 0), c(0, 1))
 #   
 
 # Part Two ----------------------------------------------------------------
+#
+# A quite easy part two. Just brute-force it by going along the vertical axis
+# first row by row and taking the max value of either shooting a beam from the 
+# left side or right side. Using it with lapply gives us a nice list with all
+# the results. Then do the same along the horisontal axis. And simply take the
+# hightest number of either lists and that's our answer.
+#
 
 res_y <- lapply(1:nrow(layout), \(y) {
   #print(paste0("Testing [", y, ", 1] and [", y, ", ", ncol(layout), "]"))

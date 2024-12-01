@@ -236,16 +236,10 @@ matrix <-   str_split_fixed(lines, "", n=str_length(lines[[1]]))
 
 search <- function(m, y, x, pattern = "\\d", p = list()) {
   id <- paste(y, x, sep = "_")
-  if(id %in% p) {
-    return(FALSE)
-  }
+  if(id %in% p) return(FALSE)
   p = append(p, id)
-  if(y < 1 | y > nrow(m) | x < 1 | x > ncol(m)) {
-    return(FALSE)
-  }
-  if(m[y,x] == ".") {
-    return(FALSE)
-  }
+  if(y < 1 | y > nrow(m) | x < 1 | x > ncol(m)) return(FALSE)
+  if(m[y,x] == ".") return(FALSE)
   if(str_detect(m[y, x], pattern)) {
     return(   search(m, y-1, x-1, pattern, p) | search(m, y-1, x, pattern,p) | search(m, y-1, x+1, pattern, p) |
               search(m, y, x-1, pattern, p)   |                                search(m, y, x+1, pattern, p)   |
@@ -364,9 +358,7 @@ extract_number <- function(m, y, x) {
 
 
 find_adjacent_numbers <- function(m, y, x) {
-  if(y < 1 | y > nrow(m) | x < 1 | x > ncol(m)) {
-    return(list(0))
-  }
+  if(y < 1 | y > nrow(m) | x < 1 | x > ncol(m)) return(list(0))
   numbers <- list()
   for(yi in -1:1) {
     p = list()
@@ -374,9 +366,7 @@ find_adjacent_numbers <- function(m, y, x) {
       if(str_detect(m[y+yi, x+xi], "\\d")) {
         res = extract_number(m, y+yi, x+xi)
         id <- paste(res[[1]], res[[2]], sep = "_")
-        if(id %in% p) {
-          break
-        }
+        if(id %in% p) break
         p <- append(p, id)
         numbers <- append(numbers, res[[3]])
       }

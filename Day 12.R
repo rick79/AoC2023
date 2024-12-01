@@ -1177,18 +1177,10 @@ group_lengths <- input |>
 
 allowed_arrangements_old <- function(record, group_lengths, cache = TRUE) {
   sl <- str_length(record)
-  if(sl == 0 & length(group_lengths) == 0) {   # Nothing left of the record and all groups are handled!
-    return(1)
-  } 
-  if(sl == 0 & length(group_lengths) > 0) {    # Nothing left of the record, but there are still groups to handle? Something's awry!
-    return(0)
-  }
-  if(length(group_lengths) == 0 & str_detect(record, "#")) {   # There are still # in the record, but no more groups. Something's awry!
-    return(0)
-  }
-  if(length(group_lengths) == 0 & !str_detect(record, "#")) {  # There are no more groups to handle, and no more # in the record. All is well!
-    return(1)
-  }
+  if(sl == 0 & length(group_lengths) == 0) return(1)   # Nothing left of the record and all groups are handled!
+  if(sl == 0 & length(group_lengths) > 0) return(0)    # Nothing left of the record, but there are still groups to handle? Something's awry!
+  if(length(group_lengths) == 0 & str_detect(record, "#")) return(0)   # There are still # in the record, but no more groups. Something's awry!
+  if(length(group_lengths) == 0 & !str_detect(record, "#")) return(1)  # There are no more groups to handle, and no more # in the record. All is well!
 
   # Caching! the use of is.key_missing is so that the key/value-pair won't be
   # removed between checking the key and getting the value.
@@ -1200,10 +1192,8 @@ allowed_arrangements_old <- function(record, group_lengths, cache = TRUE) {
     } 
   }
   
-  # Result counter.
-  r <- 0
-  
-  head <- substr(record, 1, 1)
+  r <- 0 # Result counter.
+  head <- record |> substr(1, 1)
   
   if(head == ".") { # If the record starts with a ., discard it and move on...
     r <- r + allowed_arrangements(substr(record, 2, sl+1), group_lengths)
@@ -1215,12 +1205,12 @@ allowed_arrangements_old <- function(record, group_lengths, cache = TRUE) {
   }
   
   if(head == "#") { # If the record starts with a # it's time to check the first group left!
-    gl <- first(group_lengths)
-    q1 <- gl <= sl                                   # The group length can't be longer than the number of characters remaining in the record!
-    q2 <- !str_detect(substr(record, 1, gl), "\\.")  # The record can't contain any . between the start of the remaining record and the group length (that would break the pattern)
-    q3 <- gl == sl                                   # This was the one I got wrong!
-    q4 <- substr(record, gl+1, gl+1) != "#"          # The record can't continue with a # after the group because of the rules (all groups are separated by at least one .)
-    if(q1  & q2 & (q3 | q4 )){                       # I moved the conditions to separate variables to make the conditionals easier to read
+    gl <- group_lengths |> first()
+    q1 <- gl <= sl                                     # The group length can't be longer than the number of characters remaining in the record!
+    q2 <- !str_detect(record |> substr(1, gl), "\\.")  # The record can't contain any . between the start of the remaining record and the group length (that would break the pattern)
+    q3 <- gl == sl                                     # This was the one I got wrong!
+    q4 <- record |> substr(gl+1, gl+1) != "#"          # The record can't continue with a # after the group because of the rules (all groups are separated by at least one .)
+    if(q1  & q2 & (q3 | q4 )) {                        # I moved the conditions to separate variables to make the conditionals easier to read
       r <- r + allowed_arrangements(substr(record, gl + 2, sl+2), group_lengths[-1]) # And we have a winner!
     } 
   }
@@ -1235,28 +1225,17 @@ allowed_arrangements_old <- function(record, group_lengths, cache = TRUE) {
 # them (with pride).
 allowed_arrangements <- function(record, group_lengths) {
   sl <- str_length(record)
-  if(sl == 0 & length(group_lengths) == 0) {
-    return(1)
-  } 
-  if(sl == 0 & length(group_lengths) > 0) {
-    return(0)
-  }
-  if(length(group_lengths) == 0 & str_detect(record, "#")) {
-    return(0)
-  }
-  if(length(group_lengths) == 0 & !str_detect(record, "#")) {
-    return(1)
-  }
+  if(sl == 0 & length(group_lengths) == 0) return(1)
+  if(sl == 0 & length(group_lengths) > 0) return(0)
+  if(length(group_lengths) == 0 & str_detect(record, "#")) return(0)
+  if(length(group_lengths) == 0 & !str_detect(record, "#")) return(1)
   
   key <- paste0(hash(record), hash(group_lengths))
   value <- cm$get(key)
-  if(!is.key_missing(value)) {
-    return(cm$get(key))
-  } 
-  
+  if(!is.key_missing(value)) return(cm$get(key))
+
   r <- 0
-  
-  head <- substr(record, 1, 1)
+  head <- record |> substr(1, 1)
   
   if(head %in% c(".", "?")) {
     r <- r + allowed_arrangements(substr(record, 2, sl+1), group_lengths)
@@ -1265,11 +1244,11 @@ allowed_arrangements <- function(record, group_lengths) {
   if(head %in% c("#", "?")) {
     gl <- first(group_lengths)
     q1 <- gl <= sl
-    q2 <- !str_detect(substr(record, 1, gl), "\\.")
+    q2 <- !str_detect(record |> substr(1, gl), "\\.")
     q3 <- gl == sl
-    q4 <- substr(record, gl+1, gl+1) != "#"
+    q4 <- record |> substr(gl+1, gl+1) != "#"
     if(q1  & q2 & (q3 | q4 )){
-      r <- r + allowed_arrangements(substr(record, gl + 2, sl+2), group_lengths[-1])
+      r <- r + allowed_arrangements(record |> substr(gl + 2, sl+2), group_lengths[-1])
     } 
   }
   cm$set(key, r)
@@ -1278,11 +1257,11 @@ allowed_arrangements <- function(record, group_lengths) {
 
 cm <- cachem::cache_mem(max_size = 1024 * 1024^2)
 
-sum(mapply(allowed_arrangements, records, group_lengths))
+mapply(allowed_arrangements, records, group_lengths) |> sum()
 # Answer: 8419
 
 # Old solution:
-sum(mapply(allowed_arrangements_old, records, group_lengths, MoreArgs = list("cache" = FALSE)))
+mapply(allowed_arrangements_old, records, group_lengths, MoreArgs = list("cache" = FALSE)) |> sum()
 # Answer: 8419
 
 # Part Two: Description ----------------------------------------------------
@@ -1334,7 +1313,7 @@ records2 <- records |>
 group_lengths2 <- group_lengths |> 
   lapply(\(x) rep(x, 5))
   
-print(sum(mapply(allowed_arrangements, records2, group_lengths2)), digits = 16)
+print(mapply(allowed_arrangements, records2, group_lengths2) |> sum(), digits = 16)
 
 # Answer: 160500973317706
 

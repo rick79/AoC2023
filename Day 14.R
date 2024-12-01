@@ -3,7 +3,7 @@
 # Init --------------------------------------------------------------------
 library(tidyverse)
 library(collections)
-
+source("utilities.R")
 # Data --------------------------------------------------------------------
 test1 <- "O....#....
 O.OO#....#
@@ -216,12 +216,9 @@ O..........O.O.........#O...#...#..##........O.#......O#..O#.......O...O...#O...
 platform <- data |> 
   str_split_1("\n") |> 
   str_split("") |> 
-  {\(x) unlist(x) |> 
-      matrix(ncol = length(x), byrow = TRUE)}()
+  {\(x) unlist(x) |> matrix(ncol = length(x), byrow = TRUE)}()
 
 total_load <- function(p) { sum(nrow(p) - which(p == "O", arr.ind = TRUE)[, "row"]+1) }
-
-rotate_cw <- function(m) { t(apply(m, 2, rev)) }
 
 tilt <- function(p) {
   for(y in 2:nrow(p)) {
@@ -231,7 +228,7 @@ tilt <- function(p) {
           p[1, x] <- "O"
           p[y, x] <- "."
         } else {
-          dy <- first(which(cumsum(p[(y - 1):1, x] != ".") == 1)) - 1
+          dy <- which(cumsum(p[(y - 1):1, x] != ".") == 1) |> first() - 1
           if(dy >= 1) {
             p[y - dy, x] <- "O"
             p[y, x] <- "."
@@ -311,12 +308,17 @@ total_load(p)
 #
 
 # Part Two ----------------------------------------------------------------
-
+#
+# So... there is no way in heck we can get away with brute-forcing this. So my
+# guess is that the input data is constructed in such a way that there is an 
+# emerging pattern that we can take advantage of.
+#
 #  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20
 #        [                 ]  [  4  5  6  7  8  ]  [  4  5  6
 #        1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18
 #        [                 ]  [                 ]  [
 #        f                    s                             m
+
 # f = First occurrence of a state
 # s = Second occurence of a state
 # m = Max cycles
@@ -329,10 +331,8 @@ p <- platform
 seen <- dict()  # Dict to avoid having to loop through a list to check if a state has occured before
 state <- list() # List to store states, so we can avoid having to redo the last calculations of an incomplete pattern cycle.
 seen$set(p, 0)  # We have always seen the start state, not that we need it but anyhow
-seen$get(p)
 max_c <- 1000000000
 for(c in 1:max_c) {
-  print(c)
   p <- p |> 
     tilt() |> 
     rotate_cw() |> 
@@ -361,66 +361,66 @@ for(c in 1:max_c) {
 
 
 # Old stuff ---------------------------------------------------------------
-
-total_load2 <- function(p) {
-  t_load <- 0
-  for(y in 1:nrow(p)) {
-    for(x in 1:ncol(p)) {
-      if(p[y, x] == "O") {
-        t_load <- t_load + nrow(p) - y + 1
-      }
-    }
-  }
-  return(t_load)
-}
-
-total_load3 <- function(p) {
-  t_load <- 0
-  p_rows <- nrow(p)
-  o_rocks <- which(p == "O", arr.ind = TRUE)
-  for(i in o_rocks[, "row"]) {
-    t_load <- t_load + (p_rows - i + 1)
-  }
-  return(t_load)
-}
-
-tilt2 <- function(p, direction = 0) {  # 0 = Nord, 1 = Väst, 2 = Syd, 3 = Öst
-  if(direction > 0) {
-    for(i in 1:(direction %% 4)) {
-      p <- rotate(p)
-    }
-  }
-  p_cols <- ncol(p)
-  p_rows <- nrow(p)
-  for(y in 2:p_rows) {
-    for(x in 1:p_cols) {
-      if(p[y, x] == "O") {
-        #print(paste0("Found a ", p[y, x], " at y = ", y, ", x = ", x, ". Moving upwards"))
-        stop <- 1
-        for(dy in (y-1):1) {
-          if(p[dy, x] != ".") {
-            #print(paste0("-Stopping for a ", p[dy, x], " at y = ", dy+1, ", x = ", x))
-            stop <- dy+1
-            break
-          }
-        }
-        if(stop == 1) {
-          #print("-Reached the top, stopping")
-        }
-        if(stop != y) {
-          p[stop, x] <- "O"
-          p[y, x] <- "."
-        } else {
-          #print("Didn't move?")
-        }
-      }
-    }
-  }
-  if(direction > 0) {
-    for(i in 1:(4 - (direction %% 4))) {
-      p <- rotate(p)
-    }
-  }
-  return(p)
-}
+# 
+# total_load2 <- function(p) {
+#   t_load <- 0
+#   for(y in 1:nrow(p)) {
+#     for(x in 1:ncol(p)) {
+#       if(p[y, x] == "O") {
+#         t_load <- t_load + nrow(p) - y + 1
+#       }
+#     }
+#   }
+#   return(t_load)
+# }
+# 
+# total_load3 <- function(p) {
+#   t_load <- 0
+#   p_rows <- nrow(p)
+#   o_rocks <- which(p == "O", arr.ind = TRUE)
+#   for(i in o_rocks[, "row"]) {
+#     t_load <- t_load + (p_rows - i + 1)
+#   }
+#   return(t_load)
+# }
+# 
+# tilt2 <- function(p, direction = 0) {  # 0 = Nord, 1 = Väst, 2 = Syd, 3 = Öst
+#   if(direction > 0) {
+#     for(i in 1:(direction %% 4)) {
+#       p <- rotate(p)
+#     }
+#   }
+#   p_cols <- ncol(p)
+#   p_rows <- nrow(p)
+#   for(y in 2:p_rows) {
+#     for(x in 1:p_cols) {
+#       if(p[y, x] == "O") {
+#         #print(paste0("Found a ", p[y, x], " at y = ", y, ", x = ", x, ". Moving upwards"))
+#         stop <- 1
+#         for(dy in (y-1):1) {
+#           if(p[dy, x] != ".") {
+#             #print(paste0("-Stopping for a ", p[dy, x], " at y = ", dy+1, ", x = ", x))
+#             stop <- dy+1
+#             break
+#           }
+#         }
+#         if(stop == 1) {
+#           #print("-Reached the top, stopping")
+#         }
+#         if(stop != y) {
+#           p[stop, x] <- "O"
+#           p[y, x] <- "."
+#         } else {
+#           #print("Didn't move?")
+#         }
+#       }
+#     }
+#   }
+#   if(direction > 0) {
+#     for(i in 1:(4 - (direction %% 4))) {
+#       p <- rotate(p)
+#     }
+#   }
+#   return(p)
+# }
 
